@@ -5,6 +5,15 @@
     <title>GUDLFT Registration</title>
 </head>
 <body>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for message in messages %}
+                    <div class="alert alert-info">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
     <h1>Welcome to the GUDLFT Registration Portal!</h1>
     Please enter your secretary email to continue:
     <form action="showSummary" method="post">
