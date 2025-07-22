@@ -62,19 +62,31 @@ def showSummary():
 
 @app.route('/book/<competition>/<club>')
 def book(competition, club):
-    foundClub = [c for c in clubs if c['name'] == club][0]
-    foundCompetition = [c for c in competitions if c['name'] == competition][0]
-    if foundClub and foundCompetition:
+    # bug fix 3 : unknown club or competition on booking
+    foundClub_list = [c for c in clubs if c['name'] == club]
+    foundCompetition_list = [c for c in competitions if c['name'] == competition]
+
+    if foundClub_list and foundCompetition_list:
+        foundClub = foundClub_list[0]
+        foundCompetition = foundCompetition_list[0]
         return render_template('booking.html', club=foundClub, competition=foundCompetition)
     else:
         flash("Something went wrong-please try again")
-        return render_template('welcome.html', club=club, competitions=competitions)
+        return render_template('welcome.html', club={"name": club}, competitions=competitions)
 
 
 @app.route('/purchasePlaces', methods=['POST'])
 def purchasePlaces():
-    competition = [c for c in competitions if c['name'] == request.form['competition']][0]
-    club = [c for c in clubs if c['name'] == request.form['club']][0]
+    # bug fix 4 : unknown club or competition on purchase
+    competition_list = [c for c in competitions if c['name'] == request.form['competition']]
+    club_list = [c for c in clubs if c['name'] == request.form['club']]
+
+    if not competition_list or not club_list:
+        flash("Something went wrong-please try again")
+        return render_template('welcome.html', club={"name": request.form['club']}, competitions=competitions)
+
+    competition = competition_list[0]
+    club = club_list[0]
     placesRequired = int(request.form['places'])
     # Limiter à 12 places maximum
     if placesRequired > 12:
