@@ -1,5 +1,5 @@
 import json
-import pytest
+from config.messages import Messages
 
 
 def test_purchase_insufficient_points(client, club_with_least_points, first_competition):
@@ -17,8 +17,7 @@ def test_purchase_insufficient_points(client, club_with_least_points, first_comp
     })
 
     assert response.status_code == 200
-    expected_message = (f"Not enough points! You need {places_to_buy} points "
-                        f"but have {club_with_least_points['points']}")
+    expected_message = Messages.format_not_enough_points(places_to_buy, club_with_least_points['points'])
     assert expected_message.encode() in response.data
 
 
@@ -44,7 +43,7 @@ def test_purchase_saves_decremented_club_points(client, first_club, first_compet
     })
 
     assert response.status_code == 200
-    assert b'Great-booking complete!' in response.data
+    assert Messages.BOOKING_COMPLETE.encode() in response.data
 
     # Vérifier que le fichier JSON de test a été mis à jour
     with open('test/data/clubs.json', 'r') as f:
@@ -78,7 +77,7 @@ def test_purchase_saves_updated_competition_places(client, first_club, first_com
     })
 
     assert response.status_code == 200
-    assert b'Great-booking complete!' in response.data
+    assert Messages.BOOKING_COMPLETE.encode() in response.data
 
     # Vérifier que le fichier JSON de test a été mis à jour
     with open('test/data/competitions.json', 'r') as f:
@@ -113,7 +112,7 @@ def test_purchase_more_than_12_places(client, club_with_most_points, first_compe
     })
 
     assert response.status_code == 200
-    assert b'You cannot book more than 12 places per competition!' in response.data
+    assert Messages.MAX_PLACES_EXCEEDED.encode() in response.data
 
     # Vérifier que les points n'ont pas changé dans test/data/
     with open('test/data/clubs.json', 'r') as f:
@@ -130,11 +129,12 @@ def test_purchase_exactly_12_places_success(client, test_data, first_competition
     # Trouver un club qui a au moins 12 points
     club_with_enough_points = None
     for club in test_data['clubs']:
-        if int(club['points']) >= 12:
+        if int(club['points']) >= Messages.MAX_PLACES_PER_BOOKING:
             club_with_enough_points = club
             break
 
     if not club_with_enough_points:
+        import pytest
         pytest.skip("Aucun club n'a assez de points pour ce test")
 
     # Se connecter avec ce club
@@ -145,11 +145,11 @@ def test_purchase_exactly_12_places_success(client, test_data, first_competition
     response = client.post('/purchasePlaces', data={
         'club': club_with_enough_points['name'],
         'competition': first_competition['name'],
-        'places': '12'
+        'places': str(Messages.MAX_PLACES_PER_BOOKING)
     })
 
     assert response.status_code == 200
-    assert b'Great-booking complete!' in response.data
+    assert Messages.BOOKING_COMPLETE.encode() in response.data
 
     # Vérifier que les points ont été décrémentes correctement
     with open('test/data/clubs.json', 'r') as f:
@@ -157,7 +157,7 @@ def test_purchase_exactly_12_places_success(client, test_data, first_competition
 
     for club in data['clubs']:
         if club['name'] == club_with_enough_points['name']:
-            expected_points = int(club_with_enough_points['points']) - 12
+            expected_points = int(club_with_enough_points['points']) - Messages.MAX_PLACES_PER_BOOKING
             assert int(club['points']) == expected_points
             break
 
@@ -177,3 +177,27 @@ def test_purchase_zero_places_error(client, first_club, first_competition):
     # Le comportement peut varier selon votre implémentation
     # Soit erreur côté serveur, soit validation côté client
     assert response.status_code in [200, 400, 500]
+
+
+def test_purchase_invalid_club_or_competition(client, test_data):
+    """Test d'achat avec club ou compétition invalide"""
+    valid_club = test_data['clubs'][0]
+    valid_competition = test_data['competitions'][0]
+
+    # Test avec club invalide
+    response = client.post('/purchasePlaces', data={
+        'club': 'Invalid Club',
+        'competition': valid_competition['name'],
+        'places': '2'
+    })
+    assert response.status_code == 200
+    assert Messages.SOMETHING_WENT_WRONG.encode() in response.data
+
+    # Test avec compétition invalide
+    response = client.post('/purchasePlaces', data={
+        'club': valid_club['name'],
+        'competition': 'Invalid Competition',
+        'places': '2'
+    })
+    assert response.status_code == 200
+    assert Messages.SOMETHING_WENT_WRONG.encode() in response.data
