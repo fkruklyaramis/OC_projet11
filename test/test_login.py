@@ -1,9 +1,12 @@
+from config.messages import Messages
+
+
 def test_valid_login(client, valid_email):
     """Test de connexion avec un email valide"""
     response = client.post('/showSummary', data={'email': valid_email})
     assert response.status_code == 200
     # Vérifier que la page de bienvenue s'affiche
-    assert b'welcome' in response.data.lower() or b'summary' in response.data.lower()
+    assert Messages.check_welcome_page(response.data)
 
 
 def test_invalid_email_login(client, invalid_email):
@@ -16,7 +19,7 @@ def test_invalid_email_with_redirect(client, invalid_email):
     """Test de connexion avec email invalide et suivi des redirections"""
     response = client.post('/showSummary', data={'email': invalid_email}, follow_redirects=True)
     assert response.status_code == 200
-    assert b'Club not found' in response.data
+    assert Messages.CLUB_NOT_FOUND.encode() in response.data
 
 
 def test_empty_email_login(client):
@@ -59,4 +62,4 @@ def test_logout_with_follow_redirects(client):
     response = client.get('/logout', follow_redirects=True)
     assert response.status_code == 200
     # Vérifier qu'on est bien sur la page d'accueil
-    assert b'Club Points Overview' in response.data or b'Enter your email' in response.data
+    assert Messages.check_index_page(response.data)

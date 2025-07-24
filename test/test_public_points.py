@@ -1,4 +1,5 @@
 import re
+from config.messages import Messages
 
 
 def test_index_page_shows_club_points_table(client, test_data):
@@ -7,7 +8,7 @@ def test_index_page_shows_club_points_table(client, test_data):
     assert response.status_code == 200
 
     # Vérifier que le tableau est présent
-    assert b'Club Points Overview' in response.data
+    assert Messages.CLUB_POINTS_OVERVIEW.encode() in response.data
     assert b'<table' in response.data
     assert b'Club Name' in response.data
     assert b'Available Points' in response.data
@@ -49,7 +50,7 @@ def test_public_table_readonly_no_login_required(client):
     assert response.status_code == 200
 
     # Le tableau doit être visible sans se connecter
-    assert b'Club Points Overview' in response.data
+    assert Messages.CLUB_POINTS_OVERVIEW.encode() in response.data
     assert b'For transparency' in response.data
 
     # Pas de champs de modification dans le tableau

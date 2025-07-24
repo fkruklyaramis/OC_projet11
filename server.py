@@ -1,6 +1,7 @@
 import json
 import os
 from flask import Flask, render_template, request, redirect, flash, url_for
+from config.messages import Messages
 
 
 def get_data_path(filename):
@@ -54,7 +55,7 @@ def showSummary():
     club_list = [club for club in clubs if club['email'] == request.form['email']]
     # bug fix #1 : unknown email on login
     if not club_list:
-        flash("Club not found. Please try again.")
+        flash(Messages.CLUB_NOT_FOUND)  # ← Utilise la config
         return redirect(url_for('index'))
     club = club_list[0]
     return render_template('welcome.html', club=club, competitions=competitions)
@@ -71,7 +72,7 @@ def book(competition, club):
         foundCompetition = foundCompetition_list[0]
         return render_template('booking.html', club=foundClub, competition=foundCompetition)
     else:
-        flash("Something went wrong-please try again")
+        flash(Messages.SOMETHING_WENT_WRONG)  # ← Utilise la config
         return render_template('welcome.html', club={"name": club}, competitions=competitions)
 
 
@@ -82,20 +83,21 @@ def purchasePlaces():
     club_list = [c for c in clubs if c['name'] == request.form['club']]
 
     if not competition_list or not club_list:
-        flash("Something went wrong-please try again")
+        flash(Messages.SOMETHING_WENT_WRONG)  # ← Utilise la config
         return render_template('welcome.html', club={"name": request.form['club']}, competitions=competitions)
 
     competition = competition_list[0]
     club = club_list[0]
     placesRequired = int(request.form['places'])
+
     # Limiter à 12 places maximum
-    if placesRequired > 12:
-        flash("You cannot book more than 12 places per competition!")
+    if placesRequired > Messages.MAX_PLACES_PER_BOOKING:  # ← Utilise la config
+        flash(Messages.MAX_PLACES_EXCEEDED)  # ← Utilise la config
         return render_template('welcome.html', club=club, competitions=competitions)
 
     # Vérifier si le club a assez de points
     if int(club['points']) < placesRequired:
-        flash(f"Not enough points! You need {placesRequired} points but have {club['points']}")
+        flash(Messages.format_not_enough_points(placesRequired, club['points']))  # ← Utilise la config
         return render_template('welcome.html', club=club, competitions=competitions)
 
     # Décrémenter les places de la compétition
@@ -108,11 +110,8 @@ def purchasePlaces():
     saveCompetitions()
     saveClubs()
 
-    flash('Great-booking complete!')
+    flash(Messages.BOOKING_COMPLETE)  # ← Utilise la config
     return render_template('welcome.html', club=club, competitions=competitions)
-
-
-# TODO: Add route for points display
 
 
 @app.route('/logout')
