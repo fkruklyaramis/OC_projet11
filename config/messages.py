@@ -7,6 +7,7 @@ class Messages:
     # Messages d'erreur
     CLUB_NOT_FOUND = "Club not found. Please try again."
     COMPETITION_NOT_FOUND = "Competition not found. Please try again."
+    COMPETITION_EXPIRED = "Cannot book places for past competitions. Please choose a future competition."
     SOMETHING_WENT_WRONG = "Something went wrong-please try again"
     NOT_ENOUGH_POINTS = "Not enough points! You need {places} points but have {current_points}"
     MAX_PLACES_EXCEEDED = "You cannot book more than 12 places per competition!"
