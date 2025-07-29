@@ -61,19 +61,22 @@ def showSummary():
     return render_template('welcome.html', club=club, competitions=competitions)
 
 
-@app.route('/book/<competition>/<club>')
-def book(competition, club):
+@app.route('/book/<club>/<competition>')
+def book(club, competition):
     # bug fix 3 : unknown club or competition on booking
     foundClub_list = [c for c in clubs if c['name'] == club]
     foundCompetition_list = [c for c in competitions if c['name'] == competition]
 
-    if foundClub_list and foundCompetition_list:
+    if not foundClub_list:
+        flash(Messages.CLUB_NOT_FOUND)  # ← Utilise la config
+        return render_template('welcome.html', club={"name": club}, competitions=competitions)
+    elif not foundCompetition_list:
+        flash(Messages.COMPETITION_NOT_FOUND)  # ← Utilise la config
+        return render_template('welcome.html', club={"name": club}, competitions=competitions)
+    else:
         foundClub = foundClub_list[0]
         foundCompetition = foundCompetition_list[0]
         return render_template('booking.html', club=foundClub, competition=foundCompetition)
-    else:
-        flash(Messages.SOMETHING_WENT_WRONG)  # ← Utilise la config
-        return render_template('welcome.html', club={"name": club}, competitions=competitions)
 
 
 @app.route('/purchasePlaces', methods=['POST'])
