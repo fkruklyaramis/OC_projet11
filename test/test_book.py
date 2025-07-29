@@ -192,3 +192,17 @@ def test_book_multiple_future_competitions_allowed(client):
         response = client.get(f'/book/Simply Lift/{competition}')
         assert response.status_code == 200
         assert b'<form' in response.data  # Le template booking.html contient un formulaire
+
+
+def test_book_expired_vs_valid_competitions_mixed(client):
+    """Test mixte avec compétitions expirées et valides"""
+    # Compétition expirée
+    response = client.get('/book/Simply Lift/Fall Classic')
+    assert response.status_code == 200
+    assert Messages.COMPETITION_EXPIRED.encode() in response.data
+
+    # Compétition valide
+    response = client.get('/book/Simply Lift/Next Year Games')
+    assert response.status_code == 200
+    assert b'<form' in response.data  # Le template booking.html contient un formulaire
+    assert b'Next Year Games' in response.data
