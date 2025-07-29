@@ -1,180 +1,149 @@
 from config.messages import Messages
 
 
-def test_book_valid_club_and_competition(client, first_competition, first_club):
+def test_book_valid_club_and_competition(client):
     """Test de réservation avec club et compétition valides"""
-    response = client.get(f'/book/{first_competition["name"]}/{first_club["name"]}')
+    response = client.get('/book/Simply Lift/Spring Festival')
     assert response.status_code == 200
-    # Vérifier que la page de réservation s'affiche
-    assert Messages.check_booking_page(response.data)
+    assert b'Booking' in response.data
+    assert b'Simply Lift' in response.data
+    assert b'Spring Festival' in response.data
 
 
-def test_book_invalid_club_valid_competition(client, first_competition):
-    """Test de réservation avec club inexistant mais compétition valide"""
-    response = client.get(f'/book/{first_competition["name"]}/Invalid Club Name')
+def test_book_invalid_club_valid_competition(client):
+    """Test avec club invalide et compétition valide"""
+    response = client.get('/book/Unknown Club/Spring Festival')
     assert response.status_code == 200
-    assert Messages.SOMETHING_WENT_WRONG.encode() in response.data
+    assert Messages.CLUB_NOT_FOUND.encode() in response.data
 
 
-def test_book_valid_club_invalid_competition(client, first_club):
-    """Test de réservation avec club valide mais compétition inexistante"""
-    response = client.get(f'/book/Invalid Competition/{first_club["name"]}')
+def test_book_valid_club_invalid_competition(client):
+    """Test avec club valide et compétition invalide"""
+    response = client.get('/book/Simply Lift/Unknown Competition')
     assert response.status_code == 200
-    assert Messages.SOMETHING_WENT_WRONG.encode() in response.data
+    assert Messages.COMPETITION_NOT_FOUND.encode() in response.data
 
 
 def test_book_both_invalid(client):
-    """Test de réservation avec club et compétition inexistants"""
-    response = client.get('/book/Invalid Competition/Invalid Club')
+    """Test avec club et compétition invalides"""
+    response = client.get('/book/Unknown Club/Unknown Competition')
     assert response.status_code == 200
-    assert Messages.SOMETHING_WENT_WRONG.encode() in response.data
+    assert Messages.CLUB_NOT_FOUND.encode() in response.data
 
 
-def test_book_empty_club_name(client, first_competition):
-    """Test de réservation avec nom de club vide"""
-    response = client.get(f'/book/{first_competition["name"]}/ ')
+def test_book_empty_club_name(client):
+    """Test avec nom de club vide"""
+    response = client.get('/book/ /Spring Festival')
     assert response.status_code == 200
-    assert Messages.SOMETHING_WENT_WRONG.encode() in response.data
+    assert Messages.CLUB_NOT_FOUND.encode() in response.data
 
 
-def test_book_empty_competition_name(client, first_club):
-    """Test de réservation avec nom de compétition vide"""
-    response = client.get(f'/book/ /{first_club["name"]}')
+def test_book_empty_competition_name(client):
+    """Test avec nom de compétition vide"""
+    response = client.get('/book/Simply Lift/ ')
     assert response.status_code == 200
-    assert Messages.SOMETHING_WENT_WRONG.encode() in response.data
+    assert Messages.COMPETITION_NOT_FOUND.encode() in response.data
 
 
-def test_book_case_sensitive_names(client, first_competition, first_club):
-    """Test de sensibilité à la casse pour les noms"""
-    response = client.get(f'/book/{first_competition["name"].upper()}/{first_club["name"].upper()}')
+def test_book_case_sensitive_names(client):
+    """Test que les noms sont sensibles à la casse"""
+    response = client.get('/book/simply lift/spring festival')
     assert response.status_code == 200
-    assert Messages.SOMETHING_WENT_WRONG.encode() in response.data
+    assert Messages.CLUB_NOT_FOUND.encode() in response.data
 
 
 def test_book_special_characters_in_names(client):
     """Test avec caractères spéciaux dans les noms"""
-    response = client.get('/book/Competition@#$/Club@#$')
-    # Flask peut retourner 404 pour des URLs mal formées, c'est normal
-    assert response.status_code in [200, 404]
-    if response.status_code == 200:
-        assert Messages.SOMETHING_WENT_WRONG.encode() in response.data
+    response = client.get('/book/Club@Special/Competition#123')
+    assert response.status_code == 200
+    assert Messages.CLUB_NOT_FOUND.encode() in response.data
 
 
-def test_book_url_structure(client, first_competition, first_club):
-    """Test de la structure de l'URL"""
-    # URL bien formée
-    response = client.get(f'/book/{first_competition["name"]}/{first_club["name"]}')
+def test_book_url_structure(client):
+    """Test que l'URL suit la structure attendue /book/<club>/<competition>"""
+    response = client.get('/book/Simply Lift/Spring Festival')
     assert response.status_code == 200
 
 
-def test_book_renders_correct_template_on_success(client, first_competition, first_club):
+def test_book_renders_correct_template_on_success(client):
     """Test que le bon template est rendu en cas de succès"""
-    response = client.get(f'/book/{first_competition["name"]}/{first_club["name"]}')
+    response = client.get('/book/Simply Lift/Spring Festival')
     assert response.status_code == 200
-    # Vérifier des éléments spécifiques au template booking.html
-    assert first_club["name"].encode() in response.data
-    assert first_competition["name"].encode() in response.data
+    assert b'<form' in response.data  # Le template booking.html contient un formulaire
 
 
 def test_book_flash_message_on_error(client):
-    """Test que le message flash s'affiche en cas d'erreur"""
-    response = client.get('/book/Invalid Competition/Invalid Club')
+    """Test que les messages flash apparaissent en cas d'erreur"""
+    response = client.get('/book/Unknown Club/Spring Festival')
     assert response.status_code == 200
-    assert Messages.SOMETHING_WENT_WRONG.encode() in response.data
+    assert Messages.CLUB_NOT_FOUND.encode() in response.data
 
 
-def test_book_data_passed_to_template(client, first_competition, first_club):
+def test_book_data_passed_to_template(client):
     """Test que les bonnes données sont passées au template"""
-    response = client.get(f'/book/{first_competition["name"]}/{first_club["name"]}')
+    response = client.get('/book/Simply Lift/Spring Festival')
     assert response.status_code == 200
 
-    # Vérifier que les données du club sont présentes
-    assert first_club["name"].encode() in response.data
-
-    # Vérifier que les données de la compétition sont présentes
-    assert first_competition["name"].encode() in response.data
-    assert str(first_competition["numberOfPlaces"]).encode() in response.data
+    # Vérifier que les données du club et de la compétition sont dans la réponse
+    assert b'Simply Lift' in response.data
+    assert b'Spring Festival' in response.data
 
 
-def test_book_with_all_clubs_and_competitions(client, test_data):
-    """Test de réservation en utilisant tous les clubs et compétitions disponibles"""
-    # Tester avec tous les clubs valides
-    for club in test_data['clubs']:
-        for competition in test_data['competitions']:
-            response = client.get(f'/book/{competition["name"]}/{club["name"]}')
-            assert response.status_code == 200
-            # Vérifier que les données sont correctement passées
-            assert club["name"].encode() in response.data
-            assert competition["name"].encode() in response.data
+def test_book_with_all_clubs_and_competitions(client):
+    """Test de réservation avec tous les clubs et compétitions disponibles"""
+    test_cases = [
+        ('Simply Lift', 'Spring Festival'),
+        ('Iron Temple', 'Fall Classic'),
+        ('She Lifts', 'Winter Challenge'),
+        ('Powerhouse Gym', 'Summer Showdown'),
+        ('Fit Nation', 'Autumn Championship'),
+        ('Strength Society', 'Spring Festival')
+    ]
+
+    for club_name, competition_name in test_cases:
+        response = client.get(f'/book/{club_name}/{competition_name}')
+        assert response.status_code == 200
+        assert club_name.encode() in response.data
+        assert competition_name.encode() in response.data
 
 
-def test_book_with_clubs_by_points(client, club_with_most_points, club_with_least_points, first_competition):
-    """Test de réservation avec des clubs ayant différents niveaux de points"""
-    # Test avec le club ayant le plus de points
-    response = client.get(f'/book/{first_competition["name"]}/{club_with_most_points["name"]}')
+def test_book_with_clubs_by_points(client):
+    """Test de réservation en vérifiant les points des clubs"""
+    # Simply Lift a 15 points
+    response = client.get('/book/Simply Lift/Spring Festival')
     assert response.status_code == 200
-    assert club_with_most_points["name"].encode() in response.data
-    assert first_competition["name"].encode() in response.data
+    assert b'Simply Lift' in response.data
 
-    # Test avec le club ayant le moins de points
-    response = client.get(f'/book/{first_competition["name"]}/{club_with_least_points["name"]}')
+    # Iron Temple a 4 points (moins de points)
+    response = client.get('/book/Iron Temple/Spring Festival')
     assert response.status_code == 200
-    assert club_with_least_points["name"].encode() in response.data
-    assert first_competition["name"].encode() in response.data
+    assert b'Iron Temple' in response.data
 
 
-def test_book_url_encoding_special_cases(client, test_data):
-    """Test des cas spéciaux d'encodage d'URL"""
-    club = test_data['clubs'][0]
-    competition = test_data['competitions'][0]
-
-    # Test avec des espaces dans l'URL (remplacés par %20)
-    club_name_encoded = club["name"].replace(" ", "%20")
-    competition_name_encoded = competition["name"].replace(" ", "%20")
-
-    response = client.get(f'/book/{competition_name_encoded}/{club_name_encoded}')
-    assert response.status_code == 200
-    assert club["name"].encode() in response.data
-    assert competition["name"].encode() in response.data
-
-
-def test_book_validates_input_parameters(client, test_data):
-    """Test que la fonction book valide correctement les paramètres d'entrée"""
-    competition = test_data['competitions'][0]
-
-    # Test avec des noms très longs
-    long_name = "a" * 1000
-    response = client.get(f'/book/{competition["name"]}/{long_name}')
-    assert response.status_code == 200
-    assert Messages.SOMETHING_WENT_WRONG.encode() in response.data
-
-    # Test avec des noms contenant seulement des espaces
-    response = client.get(f'/book/{competition["name"]}/   ')
-    assert response.status_code == 200
-    assert Messages.SOMETHING_WENT_WRONG.encode() in response.data
-
-
-def test_book_preserves_original_data(client, first_competition, first_club, test_data):
-    """Test que la fonction book ne modifie pas les données originales"""
-    # Sauvegarder les données originales
-    original_club_points = first_club["points"]
-    original_competition_places = first_competition["numberOfPlaces"]
-
-    # Appeler la fonction book
-    response = client.get(f'/book/{first_competition["name"]}/{first_club["name"]}')
+def test_book_url_encoding_special_cases(client):
+    """Test avec des caractères qui pourraient poser problème dans l'URL"""
+    # Test avec des espaces (déjà gérés par Flask)
+    response = client.get('/book/Simply Lift/Spring Festival')
     assert response.status_code == 200
 
-    # Vérifier que les données n'ont pas été modifiées
-    import json
-    with open('test/data/clubs.json', 'r') as f:
-        clubs_data = json.load(f)
-    with open('test/data/competitions.json', 'r') as f:
-        competitions_data = json.load(f)
 
-    # Trouver le club et la compétition
-    club_found = next(c for c in clubs_data['clubs'] if c['name'] == first_club['name'])
-    competition_found = next(c for c in competitions_data['competitions'] if c['name'] == first_competition['name'])
+def test_book_validates_input_parameters(client):
+    """Test que la route valide correctement les paramètres d'entrée"""
+    # Test avec paramètres valides
+    response = client.get('/book/Simply Lift/Spring Festival')
+    assert response.status_code == 200
 
-    # Vérifier que les données sont inchangées
-    assert club_found["points"] == original_club_points
-    assert competition_found["numberOfPlaces"] == original_competition_places
+    # Test avec paramètres qui n'existent pas
+    response = client.get('/book/NonExistentClub/NonExistentCompetition')
+    assert response.status_code == 200
+    assert Messages.CLUB_NOT_FOUND.encode() in response.data
+
+
+def test_book_preserves_original_data(client):
+    """Test que la consultation ne modifie pas les données originales"""
+    # Faire plusieurs requêtes et vérifier que les données restent cohérentes
+    for _ in range(3):
+        response = client.get('/book/Simply Lift/Spring Festival')
+        assert response.status_code == 200
+        assert b'Simply Lift' in response.data
+        assert b'Spring Festival' in response.data

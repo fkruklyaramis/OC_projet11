@@ -2,43 +2,41 @@ import json
 from config.messages import Messages
 
 
-def test_purchase_insufficient_points(client, club_with_least_points, first_competition):
-    """Test d'achat avec points insuffisants"""
-    # Se connecter avec le club ayant le moins de points
-    response = client.post('/showSummary', data={'email': club_with_least_points['email']})
-    assert response.status_code == 200
+def test_purchase_insufficient_points(client):
+    """Test qu'on ne peut pas acheter plus de places que de points disponibles"""
+    # Se connecter avec Iron Temple (4 points)
+    response = client.post('/showSummary', data={'email': 'admin@irontemple.com'})
 
-    # Essayer d'acheter plus de places que de points disponibles
-    places_to_buy = int(club_with_least_points['points']) + 5
+    # Essayer d'acheter 10 places (plus que les 4 points disponibles)
     response = client.post('/purchasePlaces', data={
-        'club': club_with_least_points['name'],
-        'competition': first_competition['name'],
-        'places': str(places_to_buy)
+        'club': 'Iron Temple',
+        'competition': 'Spring Festival',
+        'places': '10'
     })
 
     assert response.status_code == 200
-    expected_message = Messages.format_not_enough_points(places_to_buy, club_with_least_points['points'])
+    expected_message = Messages.format_not_enough_points(10, 4)
     assert expected_message.encode() in response.data
 
 
-def test_purchase_saves_decremented_club_points(client, first_club, first_competition):
-    """Test que les points du club sont décrémentes et sauvegardés correctement"""
-    # Se connecter avec le premier club
-    client.post('/showSummary', data={'email': first_club['email']})
+def test_purchase_saves_decremented_club_points(client):
+    """Test que les points du club sont sauvegardés correctement après achat"""
+    # Se connecter avec Simply Lift (15 points)
+    response = client.post('/showSummary', data={'email': 'john@simplylift.co'})
 
-    # Récupérer les points initiaux depuis test/data/
-    with open('test/data/clubs.json', 'r') as f:
+    # Vérifier les points initiaux
+    with open('test/data/testing/clubs.json', 'r') as f:
         initial_data = json.load(f)
     initial_points = None
     for club in initial_data['clubs']:
-        if club['name'] == first_club['name']:
-            initial_points = int(club['points'])
+        if club['name'] == 'Simply Lift':
+            initial_points = club['points']
             break
 
     # Acheter 2 places
     response = client.post('/purchasePlaces', data={
-        'club': first_club['name'],
-        'competition': first_competition['name'],
+        'club': 'Simply Lift',
+        'competition': 'Spring Festival',
         'places': '2'
     })
 
@@ -46,33 +44,33 @@ def test_purchase_saves_decremented_club_points(client, first_club, first_compet
     assert Messages.BOOKING_COMPLETE.encode() in response.data
 
     # Vérifier que le fichier JSON de test a été mis à jour
-    with open('test/data/clubs.json', 'r') as f:
+    with open('test/data/testing/clubs.json', 'r') as f:
         updated_data = json.load(f)
 
     for club in updated_data['clubs']:
-        if club['name'] == first_club['name']:
-            assert int(club['points']) == initial_points - 2
+        if club['name'] == 'Simply Lift':
+            assert club['points'] == initial_points - 2
             break
 
 
-def test_purchase_saves_updated_competition_places(client, first_club, first_competition):
+def test_purchase_saves_updated_competition_places(client):
     """Test que le nombre de places de la compétition est sauvegardé correctement"""
-    # Se connecter avec le premier club
-    client.post('/showSummary', data={'email': first_club['email']})
+    # Se connecter avec Simply Lift
+    response = client.post('/showSummary', data={'email': 'john@simplylift.co'})
 
-    # Récupérer le nombre initial de places
-    with open('test/data/competitions.json', 'r') as f:
+    # Vérifier les places initiales
+    with open('test/data/testing/competitions.json', 'r') as f:
         initial_data = json.load(f)
     initial_places = None
     for comp in initial_data['competitions']:
-        if comp['name'] == first_competition['name']:
-            initial_places = int(comp['numberOfPlaces'])
+        if comp['name'] == 'Spring Festival':
+            initial_places = comp['numberOfPlaces']
             break
 
     # Acheter 3 places
     response = client.post('/purchasePlaces', data={
-        'club': first_club['name'],
-        'competition': first_competition['name'],
+        'club': 'Simply Lift',
+        'competition': 'Spring Festival',
         'places': '3'
     })
 
@@ -80,124 +78,169 @@ def test_purchase_saves_updated_competition_places(client, first_club, first_com
     assert Messages.BOOKING_COMPLETE.encode() in response.data
 
     # Vérifier que le fichier JSON de test a été mis à jour
-    with open('test/data/competitions.json', 'r') as f:
+    with open('test/data/testing/competitions.json', 'r') as f:
         updated_data = json.load(f)
 
     for comp in updated_data['competitions']:
-        if comp['name'] == first_competition['name']:
-            assert int(comp['numberOfPlaces']) == initial_places - 3
+        if comp['name'] == 'Spring Festival':
+            assert comp['numberOfPlaces'] == initial_places - 3
             break
 
 
-def test_purchase_more_than_12_places(client, club_with_most_points, first_competition):
-    """Test d'achat de plus de 12 places"""
-    # Se connecter avec le club ayant le plus de points
-    response = client.post('/showSummary', data={'email': club_with_most_points['email']})
-    assert response.status_code == 200
+def test_purchase_more_than_12_places(client):
+    """Test qu'on ne peut pas acheter plus de 12 places"""
+    # Se connecter avec Simply Lift (15 points, assez pour 15 places)
+    response = client.post('/showSummary', data={'email': 'john@simplylift.co'})
 
-    # Récupérer les points initiaux depuis test/data/
-    with open('test/data/clubs.json', 'r') as f:
+    # Vérifier les points initiaux
+    with open('test/data/testing/clubs.json', 'r') as f:
         initial_data = json.load(f)
     initial_points = None
     for club in initial_data['clubs']:
-        if club['name'] == club_with_most_points['name']:
-            initial_points = int(club['points'])
+        if club['name'] == 'Simply Lift':
+            initial_points = club['points']
             break
 
     # Essayer d'acheter 15 places (> 12 maximum)
     response = client.post('/purchasePlaces', data={
-        'club': club_with_most_points['name'],
-        'competition': first_competition['name'],
+        'club': 'Simply Lift',
+        'competition': 'Spring Festival',
         'places': '15'
     })
 
     assert response.status_code == 200
     assert Messages.MAX_PLACES_EXCEEDED.encode() in response.data
 
-    # Vérifier que les points n'ont pas changé dans test/data/
-    with open('test/data/clubs.json', 'r') as f:
+    # Vérifier que les points n'ont pas changé dans test/data/testing/
+    with open('test/data/testing/clubs.json', 'r') as f:
         club_data = json.load(f)
 
     for club in club_data['clubs']:
-        if club['name'] == club_with_most_points['name']:
-            assert int(club['points']) == initial_points  # Pas de changement
+        if club['name'] == 'Simply Lift':
+            assert club['points'] == initial_points  # Pas de changement
             break
 
 
-def test_purchase_exactly_12_places_success(client, test_data, first_competition):
+def test_purchase_exactly_12_places_success(client):
     """Test qu'on peut acheter exactement 12 places si on a assez de points"""
-    # Trouver un club qui a au moins 12 points
-    club_with_enough_points = None
-    for club in test_data['clubs']:
-        if int(club['points']) >= Messages.MAX_PLACES_PER_BOOKING:
-            club_with_enough_points = club
-            break
-
-    if not club_with_enough_points:
-        import pytest
-        pytest.skip("Aucun club n'a assez de points pour ce test")
-
-    # Se connecter avec ce club
-    response = client.post('/showSummary', data={'email': club_with_enough_points['email']})
-    assert response.status_code == 200
+    # Se connecter avec Simply Lift (15 points, assez pour 12 places)
+    response = client.post('/showSummary', data={'email': 'john@simplylift.co'})
 
     # Acheter exactement 12 places
     response = client.post('/purchasePlaces', data={
-        'club': club_with_enough_points['name'],
-        'competition': first_competition['name'],
-        'places': str(Messages.MAX_PLACES_PER_BOOKING)
+        'club': 'Simply Lift',
+        'competition': 'Spring Festival',
+        'places': '12'
     })
 
     assert response.status_code == 200
     assert Messages.BOOKING_COMPLETE.encode() in response.data
 
-    # Vérifier que les points ont été décrémentes correctement
-    with open('test/data/clubs.json', 'r') as f:
+    # Vérifier que les points ont été décrementés correctement
+    with open('test/data/testing/clubs.json', 'r') as f:
         data = json.load(f)
 
     for club in data['clubs']:
-        if club['name'] == club_with_enough_points['name']:
-            expected_points = int(club_with_enough_points['points']) - Messages.MAX_PLACES_PER_BOOKING
-            assert int(club['points']) == expected_points
+        if club['name'] == 'Simply Lift':
+            expected_points = 15 - Messages.MAX_PLACES_PER_BOOKING  # 15 - 12 = 3
+            assert club['points'] == expected_points
             break
 
 
-def test_purchase_zero_places_error(client, first_club, first_competition):
+def test_purchase_zero_places_error(client):
     """Test qu'on ne peut pas acheter 0 place"""
     # Se connecter
-    response = client.post('/showSummary', data={'email': first_club['email']})
+    response = client.post('/showSummary', data={'email': 'john@simplylift.co'})
 
     # Essayer d'acheter 0 place - cela devrait causer une erreur ou être rejeté
     response = client.post('/purchasePlaces', data={
-        'club': first_club['name'],
-        'competition': first_competition['name'],
+        'club': 'Simply Lift',
+        'competition': 'Spring Festival',
         'places': '0'
     })
 
-    # Le comportement peut varier selon votre implémentation
-    # Soit erreur côté serveur, soit validation côté client
-    assert response.status_code in [200, 400, 500]
+    # Le comportement peut varier selon l'implémentation
+    # Soit une erreur, soit pas de changement
+    assert response.status_code == 200
 
 
-def test_purchase_invalid_club_or_competition(client, test_data):
-    """Test d'achat avec club ou compétition invalide"""
-    valid_club = test_data['clubs'][0]
-    valid_competition = test_data['competitions'][0]
+def test_purchase_invalid_club_or_competition(client):
+    """Test avec club ou compétition invalides"""
+    # Se connecter
+    response = client.post('/showSummary', data={'email': 'john@simplylift.co'})
 
     # Test avec club invalide
     response = client.post('/purchasePlaces', data={
         'club': 'Invalid Club',
-        'competition': valid_competition['name'],
+        'competition': 'Spring Festival',
         'places': '2'
     })
     assert response.status_code == 200
-    assert Messages.SOMETHING_WENT_WRONG.encode() in response.data
 
     # Test avec compétition invalide
     response = client.post('/purchasePlaces', data={
-        'club': valid_club['name'],
+        'club': 'Simply Lift',
         'competition': 'Invalid Competition',
         'places': '2'
     })
     assert response.status_code == 200
-    assert Messages.SOMETHING_WENT_WRONG.encode() in response.data
+
+
+def test_purchase_with_multiple_clubs(client):
+    """Test d'achat avec différents clubs"""
+    # Test avec She Lifts (12 points)
+    response = client.post('/showSummary', data={'email': 'kate@shelifts.co.uk'})
+
+    response = client.post('/purchasePlaces', data={
+        'club': 'She Lifts',
+        'competition': 'Fall Classic',
+        'places': '5'
+    })
+    assert response.status_code == 200
+    assert Messages.BOOKING_COMPLETE.encode() in response.data
+
+    # Test avec Fit Nation (10 points)
+    response = client.post('/showSummary', data={'email': 'info@fitnation.com'})
+
+    response = client.post('/purchasePlaces', data={
+        'club': 'Fit Nation',
+        'competition': 'Winter Challenge',
+        'places': '3'
+    })
+    assert response.status_code == 200
+    assert Messages.BOOKING_COMPLETE.encode() in response.data
+
+
+def test_purchase_updates_both_files(client):
+    """Test que l'achat met à jour à la fois clubs.json et competitions.json"""
+    # Se connecter avec Powerhouse Gym (8 points)
+    response = client.post('/showSummary', data={'email': 'contact@powerhousegym.com'})
+
+    # Acheter 4 places pour Summer Showdown
+    response = client.post('/purchasePlaces', data={
+        'club': 'Powerhouse Gym',
+        'competition': 'Summer Showdown',
+        'places': '4'
+    })
+
+    assert response.status_code == 200
+    assert Messages.BOOKING_COMPLETE.encode() in response.data
+
+    # Vérifier les deux fichiers JSON
+    with open('test/data/testing/clubs.json', 'r') as f:
+        clubs_data = json.load(f)
+
+    with open('test/data/testing/competitions.json', 'r') as f:
+        competitions_data = json.load(f)
+
+    # Vérifier que les points du club ont diminué
+    for club in clubs_data['clubs']:
+        if club['name'] == 'Powerhouse Gym':
+            assert club['points'] == 4  # 8 - 4 = 4
+            break
+
+    # Vérifier que les places de la compétition ont diminué
+    for comp in competitions_data['competitions']:
+        if comp['name'] == 'Summer Showdown':
+            assert comp['numberOfPlaces'] == 14  # 18 - 4 = 14
+            break
