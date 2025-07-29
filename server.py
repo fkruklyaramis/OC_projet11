@@ -7,7 +7,7 @@ from config.messages import Messages
 def get_data_path(filename):
     """Retourne le chemin du fichier de données selon l'environnement"""
     if os.environ.get('TESTING') or hasattr(app, 'config') and app.config.get('TESTING'):
-        return f'test/data/{filename}'
+        return f'test/data/testing/{filename}'
     return filename
 
 
@@ -104,7 +104,7 @@ def purchasePlaces():
     competition['numberOfPlaces'] = int(competition['numberOfPlaces']) - placesRequired
 
     # Décrémenter les points du club
-    club['points'] = str(int(club['points']) - placesRequired)
+    club['points'] = int(club['points']) - placesRequired
 
     # bug fix #2 : update jsons compétitions et clubs
     saveCompetitions()
