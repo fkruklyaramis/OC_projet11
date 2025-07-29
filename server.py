@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime
 from flask import Flask, render_template, request, redirect, flash, url_for
 from config.messages import Messages
 
@@ -76,6 +77,15 @@ def book(club, competition):
     else:
         foundClub = foundClub_list[0]
         foundCompetition = foundCompetition_list[0]
+
+        # Vérifier si la compétition est dans le passé
+        competition_date = datetime.strptime(foundCompetition['date'], '%Y-%m-%d %H:%M:%S')
+        current_date = datetime.now()
+
+        if competition_date < current_date:
+            flash(Messages.COMPETITION_EXPIRED)
+            return render_template('welcome.html', club=foundClub, competitions=competitions)
+
         return render_template('booking.html', club=foundClub, competition=foundCompetition)
 
 
@@ -92,6 +102,14 @@ def purchasePlaces():
     competition = competition_list[0]
     club = club_list[0]
     placesRequired = int(request.form['places'])
+
+    # Vérifier si la compétition est dans le passé
+    competition_date = datetime.strptime(competition['date'], '%Y-%m-%d %H:%M:%S')
+    current_date = datetime.now()
+
+    if competition_date < current_date:
+        flash(Messages.COMPETITION_EXPIRED)
+        return render_template('welcome.html', club=club, competitions=competitions)
 
     # Limiter à 12 places maximum
     if placesRequired > Messages.MAX_PLACES_PER_BOOKING:  # ← Utilise la config

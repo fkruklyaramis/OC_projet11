@@ -10,7 +10,7 @@ def test_purchase_insufficient_points(client):
     # Essayer d'acheter 10 places (plus que les 4 points disponibles)
     response = client.post('/purchasePlaces', data={
         'club': 'Iron Temple',
-        'competition': 'Spring Festival',
+        'competition': 'Future Championship',
         'places': '10'
     })
 
@@ -36,7 +36,7 @@ def test_purchase_saves_decremented_club_points(client):
     # Acheter 2 places
     response = client.post('/purchasePlaces', data={
         'club': 'Simply Lift',
-        'competition': 'Spring Festival',
+        'competition': 'Future Championship',
         'places': '2'
     })
 
@@ -63,14 +63,14 @@ def test_purchase_saves_updated_competition_places(client):
         initial_data = json.load(f)
     initial_places = None
     for comp in initial_data['competitions']:
-        if comp['name'] == 'Spring Festival':
+        if comp['name'] == 'Future Championship':
             initial_places = comp['numberOfPlaces']
             break
 
     # Acheter 3 places
     response = client.post('/purchasePlaces', data={
         'club': 'Simply Lift',
-        'competition': 'Spring Festival',
+        'competition': 'Future Championship',
         'places': '3'
     })
 
@@ -82,7 +82,7 @@ def test_purchase_saves_updated_competition_places(client):
         updated_data = json.load(f)
 
     for comp in updated_data['competitions']:
-        if comp['name'] == 'Spring Festival':
+        if comp['name'] == 'Future Championship':
             assert comp['numberOfPlaces'] == initial_places - 3
             break
 
@@ -104,7 +104,7 @@ def test_purchase_more_than_12_places(client):
     # Essayer d'acheter 15 places (> 12 maximum)
     response = client.post('/purchasePlaces', data={
         'club': 'Simply Lift',
-        'competition': 'Spring Festival',
+        'competition': 'Future Championship',
         'places': '15'
     })
 
@@ -129,7 +129,7 @@ def test_purchase_exactly_12_places_success(client):
     # Acheter exactement 12 places
     response = client.post('/purchasePlaces', data={
         'club': 'Simply Lift',
-        'competition': 'Spring Festival',
+        'competition': 'Future Championship',
         'places': '12'
     })
 
@@ -155,7 +155,7 @@ def test_purchase_zero_places_error(client):
     # Essayer d'acheter 0 place - cela devrait causer une erreur ou être rejeté
     response = client.post('/purchasePlaces', data={
         'club': 'Simply Lift',
-        'competition': 'Spring Festival',
+        'competition': 'Future Championship',
         'places': '0'
     })
 
@@ -172,7 +172,7 @@ def test_purchase_invalid_club_or_competition(client):
     # Test avec club invalide
     response = client.post('/purchasePlaces', data={
         'club': 'Invalid Club',
-        'competition': 'Spring Festival',
+        'competition': 'Future Championship',
         'places': '2'
     })
     assert response.status_code == 200
@@ -193,7 +193,7 @@ def test_purchase_with_multiple_clubs(client):
 
     response = client.post('/purchasePlaces', data={
         'club': 'She Lifts',
-        'competition': 'Fall Classic',
+        'competition': 'Next Year Games',
         'places': '5'
     })
     assert response.status_code == 200
@@ -204,7 +204,7 @@ def test_purchase_with_multiple_clubs(client):
 
     response = client.post('/purchasePlaces', data={
         'club': 'Fit Nation',
-        'competition': 'Winter Challenge',
+        'competition': 'Future Championship',
         'places': '3'
     })
     assert response.status_code == 200
@@ -219,7 +219,7 @@ def test_purchase_updates_both_files(client):
     # Acheter 4 places pour Summer Showdown
     response = client.post('/purchasePlaces', data={
         'club': 'Powerhouse Gym',
-        'competition': 'Summer Showdown',
+        'competition': 'Future Championship',
         'places': '4'
     })
 
@@ -241,6 +241,6 @@ def test_purchase_updates_both_files(client):
 
     # Vérifier que les places de la compétition ont diminué
     for comp in competitions_data['competitions']:
-        if comp['name'] == 'Summer Showdown':
-            assert comp['numberOfPlaces'] == 14  # 18 - 4 = 14
+        if comp['name'] == 'Future Championship':
+            assert comp['numberOfPlaces'] == 26  # 30 - 4 = 26
             break
