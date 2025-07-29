@@ -18,12 +18,22 @@
         {
             "name": "Summer Showdown",
             "date": "2021-07-10 14:00:00",
-            "numberOfPlaces": 14
+            "numberOfPlaces": 18
         },
         {
             "name": "Autumn Championship",
             "date": "2021-11-05 11:30:00",
             "numberOfPlaces": 25
+        },
+        {
+            "name": "Future Championship",
+            "date": "2026-06-15 14:00:00",
+            "numberOfPlaces": 26
+        },
+        {
+            "name": "Next Year Games",
+            "date": "2026-12-20 10:00:00",
+            "numberOfPlaces": 40
         }
     ]
 }

@@ -24,6 +24,16 @@
             "name": "Autumn Championship",
             "date": "2021-11-05 11:30:00",
             "numberOfPlaces": "25"
+        },
+        {
+            "name": "Future Championship",
+            "date": "2026-06-15 14:00:00",
+            "numberOfPlaces": 30
+        },
+        {
+            "name": "Next Year Games",
+            "date": "2026-12-20 10:00:00",
+            "numberOfPlaces": 40
         }
     ]
 }
