@@ -125,22 +125,34 @@ source env/bin/activate
 pip install -r requirements.txt
 ```
 
+### 5. Configuration des variables d'environnement
 
-### 5. Lancement de l'Application
+Créer un fichier `.env` à la racine du projet :
+
+```bash
+# Créer le fichier .env
+touch .env
+```
+
+Ajouter le contenu suivant dans `.env` :
+
+```bash
+FLASK_APP=server.py
+FLASK_ENV=development
+FLASK_RUN_HOST=0.0.0.0
+FLASK_RUN_PORT=5050
+FLASK_DEBUG=1
+SECRET_KEY=your_secret_key_here
+```
+
+⚠️ **Important** : Le fichier `.env` est dans `.gitignore` et ne doit jamais être commité sur Git pour des raisons de sécurité.
+
+### 6. Lancement de l'Application
 ```bash
 # Démarrer le serveur de développement
 python -m flask run
 
 # L'application sera disponible sur http://localhost:5050
-```
-
-### Variables d'Environnement
-```bash
-# Optionnel : définir une clé secrète
-export SECRET_KEY="votre-cle-secrete"
-
-# Mode test (utilise les données de test/data/testing/)
-export TESTING=1
 ```
 
 ## 🧪 Tests et Qualité
