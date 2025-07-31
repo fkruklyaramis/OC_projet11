@@ -123,9 +123,9 @@ class BookingUser(HttpUser):
 def on_test_start(environment, **kwargs):
     """Affichage des seuils au début du test"""
     print("\n" + "="*60)
-    print("🚀 TESTS DE PERFORMANCE LOCUST")
+    print("TESTS DE PERFORMANCE LOCUST")
     print("="*60)
-    print("📊 Seuils configurés:")
+    print("Seuils configurés:")
     print(f"   • Chargement maximum: {PerformanceThresholds.MAX_LOADING_TIME}s")
     print(f"   • Mise à jour maximum: {PerformanceThresholds.MAX_UPDATE_TIME}s")
     print(f"   • Utilisateurs par défaut: {PerformanceThresholds.DEFAULT_USERS}")
@@ -136,12 +136,12 @@ def on_test_start(environment, **kwargs):
 def on_test_stop(environment, **kwargs):
     """Affichage du résumé à la fin du test"""
     print("\n" + "="*60)
-    print("✅ RÉSULTATS DES TESTS DE PERFORMANCE")
+    print("RÉSULTATS DES TESTS DE PERFORMANCE")
     print("="*60)
 
     stats = environment.stats
 
-    print("📈 Statistiques globales:")
+    print("Statistiques globales:")
     print(f"   • Requêtes totales: {stats.total.num_requests}")
     print(f"   • Échecs: {stats.total.num_failures}")
     print(f"   • Temps de réponse médian: {stats.total.median_response_time}ms")
@@ -155,33 +155,33 @@ def on_test_stop(environment, **kwargs):
     max_loading_ms = PerformanceThresholds.MAX_LOADING_TIME * 1000
     max_update_ms = PerformanceThresholds.MAX_UPDATE_TIME * 1000
 
-    print("\n📋 Détail par endpoint:")
+    print("Détail par endpoint:")
     for entry in stats.entries.values():
         is_loading = (entry.method == "GET" or
                       (entry.method == "POST" and "/showSummary" in entry.name))
         is_update = (entry.method == "POST" and "/purchasePlaces" in entry.name)
 
-        status = "✅"
+        status = "OK"
         if is_loading and entry.max_response_time > max_loading_ms:
             violations_chargement += 1
-            status = "❌"
+            status = "KO"
         elif is_update and entry.max_response_time > max_update_ms:
             violations_mise_a_jour += 1
-            status = "❌"
+            status = "KO"
 
         print(f"   {status} {entry.method} {entry.name}: "
               f"max={entry.max_response_time}ms, "
               f"avg={entry.avg_response_time:.1f}ms")
 
-    print("\n🎯 Conformité aux seuils:")
+    print("Conformité aux seuils:")
     print(f"   • Violations chargement (>{PerformanceThresholds.MAX_LOADING_TIME}s): "
           f"{violations_chargement}")
     print(f"   • Violations mise à jour (>{PerformanceThresholds.MAX_UPDATE_TIME}s): "
           f"{violations_mise_a_jour}")
 
     if violations_chargement == 0 and violations_mise_a_jour == 0:
-        print("   🎉 Tous les seuils sont respectés !")
+        print("OK - Tous les seuils sont respectés !")
     else:
-        print("   ⚠️  Des seuils ont été dépassés.")
+        print("KO - es seuils ont été dépassés.")
 
     print("="*60 + "\n")
