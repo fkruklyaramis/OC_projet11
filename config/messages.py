@@ -8,6 +8,13 @@ class Messages:
     CLUB_NOT_FOUND = "Club not found. Please try again."
     COMPETITION_NOT_FOUND = "Competition not found. Please try again."
     COMPETITION_EXPIRED = "Cannot book places for past competitions. Please choose a future competition."
+
+
+class PerformanceThresholds:
+    """Seuils de performance pour les tests Locust"""
+    MAX_LOADING_TIME = 5.0  # 5 secondes maximum pour le chargement
+    MAX_UPDATE_TIME = 2.0   # 2 secondes maximum pour les mises à jour
+    DEFAULT_USERS = 6       # 6 utilisateurs par défaut pour les tests
     SOMETHING_WENT_WRONG = "Something went wrong-please try again"
     NOT_ENOUGH_POINTS = "Not enough points! You need {places} points but have {current_points}"
     MAX_PLACES_EXCEEDED = "You cannot book more than 12 places per competition!"
