@@ -53,7 +53,6 @@ OC_projet11/
 - `GET /book/<club>/<competition>` - Page de réservation
 - `POST /purchasePlaces` - Traitement de l'achat de places
 - `GET /logout` - Déconnexion
-- `GET /publicPoints` - Affichage public des points des clubs
 
 ### Validation des Routes
 - **Validation des paramètres** : Vérification club/compétition existants
@@ -87,6 +86,61 @@ class PerformanceThresholds:
     MAX_LOADING_TIME = 5.0  # 5 secondes maximum
     MAX_UPDATE_TIME = 2.0   # 2 secondes maximum  
     DEFAULT_USERS = 6       # 6 utilisateurs par défaut
+```
+
+## 🚀 Installation et Lancement
+
+### Prérequis
+- Python 3.8+
+- pip
+
+### 1. Cloner le dépôt
+
+```bash
+git clone https://github.com/fkruklyaramis/OC_project11.git
+cd OC_project11
+```
+
+### 2. Créer un environnement virtuel
+
+```bash
+python -m venv env
+```
+
+### 3. Activer l'environnement virtuel
+
+- Sous macOS/Linux :
+```bash
+source env/bin/activate
+```
+
+- Sous Windows :
+```bash
+.\env\Scripts\activate
+```
+
+### 4. Installer les dépendances
+
+```bash
+pip install -r requirements.txt
+```
+
+
+### 5. Lancement de l'Application
+```bash
+# Démarrer le serveur de développement
+python -m flask run
+
+# L'application sera disponible sur http://localhost:5050
+```
+
+### Variables d'Environnement
+```bash
+# Optionnel : définir une clé secrète
+export SECRET_KEY="votre-cle-secrete"
+
+# Mode test (utilise les données de test/data/testing/)
+export TESTING=1
 ```
 
 ## 🧪 Tests et Qualité
@@ -166,41 +220,6 @@ locust -f test/perf/locustfile.py --host=http://localhost:5050 --users 6 --spawn
 - **BookingUser** : Tests de mise à jour (achats POST)
 - **Mesures** : Temps de réponse, throughput, erreurs
 
-## 🚀 Installation et Lancement
-
-### Prérequis
-- Python 3.8+
-- pip
-
-### Installation
-```bash
-# Cloner le projet
-git clone <url-du-repo>
-cd OC_projet11
-
-# Installer les dépendances
-pip install -r requirements.txt
-
-# Installer Locust pour les tests de performance
-pip install locust
-```
-
-### Lancement de l'Application
-```bash
-# Démarrer le serveur de développement
-python server.py
-
-# L'application sera disponible sur http://localhost:5000
-```
-
-### Variables d'Environnement
-```bash
-# Optionnel : définir une clé secrète
-export SECRET_KEY="votre-cle-secrete"
-
-# Mode test (utilise les données de test/data/testing/)
-export TESTING=1
-```
 
 ## 📊 Données de Test
 
@@ -215,23 +234,6 @@ export TESTING=1
 - **Future Championship** : 2026-06-15 14:00:00 (future)
 - **Next Year Games** : 2026-08-20 09:00:00 (future)
 
-## 🔍 Debugging et Développement
-
-### Logs et Erreurs
-- **Mode debug** : `app.run(debug=True)` activé
-- **Messages Flash** : Retours utilisateur pour toutes les actions
-- **Gestion d'erreurs** : Validation complète des entrées
-
-### Tests Locaux
-```bash
-# Test rapide de l'API
-curl http://localhost:5000/
-curl http://localhost:5000/publicPoints
-
-# Vérification des données
-cat clubs.json
-cat competitions.json
-```
 
 ## 📈 Métriques de Qualité
 
@@ -250,29 +252,3 @@ cat competitions.json
 - **Documentation** : Commentaires et docstrings
 - **Configuration centralisée** : Tous les messages dans `config/`
 
-## 🎯 Points d'Amélioration Future
-
-### Fonctionnalités Potentielles
-- [ ] Base de données (SQLite/PostgreSQL)
-- [ ] Authentification avec mot de passe
-- [ ] API REST
-- [ ] Interface d'administration
-- [ ] Notifications email
-- [ ] Historique des réservations
-
-### Optimisations Techniques
-- [ ] Cache Redis
-- [ ] Rate limiting
-- [ ] Logs structurés
-- [ ] Déploiement Docker
-- [ ] CI/CD Pipeline
-
----
-
-## 📞 Support
-
-Pour toute question ou problème :
-1. Vérifier que tous les tests passent : `python -m pytest test/ -v`
-2. Vérifier les performances : `locust -f test/perf/locustfile.py --host=http://localhost:5000 --headless`
-3. Consulter les logs du serveur Flask
-4. Vérifier la configuration dans `config/messages.py`
