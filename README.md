@@ -118,9 +118,6 @@ python -m pytest test/integration/test_endpoints.py -v  # Cohérence des endpoin
 # Tous les tests (unitaires + intégration)
 python -m pytest test/ -v
 
-# Tests avec coverage (uniquement server.py)
-python -m pytest test/ --cov=server --cov-report=html --cov-report=term
-
 # Tests rapides (arrêt au premier échec)
 python -m pytest test/ -x
 ```

@@ -117,15 +117,15 @@ def purchasePlaces():
         return render_template('welcome.html', club=club, competitions=competitions)
 
     # Vérifier si le club a assez de points
-    if int(club['points']) < placesRequired:
+    if club['points'] < placesRequired:
         flash(Messages.format_not_enough_points(placesRequired, club['points']))  # ← Utilise la config
         return render_template('welcome.html', club=club, competitions=competitions)
 
     # Décrémenter les places de la compétition
-    competition['numberOfPlaces'] = int(competition['numberOfPlaces']) - placesRequired
+    competition['numberOfPlaces'] = competition['numberOfPlaces'] - placesRequired
 
     # Décrémenter les points du club
-    club['points'] = int(club['points']) - placesRequired
+    club['points'] = club['points'] - placesRequired
 
     # bug fix #2 : update jsons compétitions et clubs
     saveCompetitions()
