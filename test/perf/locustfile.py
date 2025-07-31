@@ -6,7 +6,7 @@ Tests selon les spécifications :
 - 6 utilisateurs par défaut
 
 Usage:
-    locust -f test/perf/locustfile.py --host=http://localhost:5001
+    locust -f test/perf/locustfile.py --host=http://localhost:5000
 """
 import time
 import sys
