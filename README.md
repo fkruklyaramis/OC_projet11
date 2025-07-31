@@ -97,8 +97,8 @@ class PerformanceThresholds:
 ### 1. Cloner le dépôt
 
 ```bash
-git clone https://github.com/fkruklyaramis/OC_project11.git
-cd OC_project11
+git clone https://github.com/fkruklyaramis/OC_projet11.git
+cd OC_projet11
 ```
 
 ### 2. Créer un environnement virtuel
