@@ -40,7 +40,7 @@ def saveCompetitions():
 
 app = Flask(__name__)
 # Load the secret key from environment variable
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key-for-testing')
 
 competitions = loadCompetitions()
 clubs = loadClubs()
@@ -103,6 +103,10 @@ def purchasePlaces():
     club = club_list[0]
     placesRequired = int(request.form['places'])
 
+    # Convertir les valeurs JSON en entiers pour éviter les erreurs de type
+    club_points = int(club['points'])
+    competition_places = int(competition['numberOfPlaces'])
+
     # Vérifier si la compétition est dans le passé
     competition_date = datetime.strptime(competition['date'], '%Y-%m-%d %H:%M:%S')
     current_date = datetime.now()
@@ -117,15 +121,15 @@ def purchasePlaces():
         return render_template('welcome.html', club=club, competitions=competitions)
 
     # Vérifier si le club a assez de points
-    if club['points'] < placesRequired:
-        flash(Messages.format_not_enough_points(placesRequired, club['points']))  # ← Utilise la config
+    if club_points < placesRequired:
+        flash(Messages.format_not_enough_points(placesRequired, club_points))  # ← Utilise la config
         return render_template('welcome.html', club=club, competitions=competitions)
 
     # Décrémenter les places de la compétition
-    competition['numberOfPlaces'] = competition['numberOfPlaces'] - placesRequired
+    competition['numberOfPlaces'] = competition_places - placesRequired
 
     # Décrémenter les points du club
-    club['points'] = club['points'] - placesRequired
+    club['points'] = club_points - placesRequired
 
     # bug fix #2 : update jsons compétitions et clubs
     saveCompetitions()
@@ -138,4 +142,3 @@ def purchasePlaces():
 @app.route('/logout')
 def logout():
     return redirect(url_for('index'))
-

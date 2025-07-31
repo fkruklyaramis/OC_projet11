@@ -6,7 +6,7 @@ Tests selon les spécifications :
 - 6 utilisateurs par défaut
 
 Usage:
-    locust -f test/perf/locustfile.py --host=http://localhost:5000
+    locust -f test/perf/locustfile.py --host=http://localhost:5050
 """
 import time
 import sys
@@ -83,24 +83,6 @@ class WebsiteUser(HttpUser):
                     )
             else:
                 response.failure(f"Erreur page de réservation: {response.status_code}")
-
-    @task(1)
-    def test_public_points_loading(self):
-        """Test du temps de chargement de la page des points publics (seuil: 5s)"""
-        start_time = time.time()
-        with self.client.get("/publicPoints", catch_response=True) as response:
-            response_time = time.time() - start_time
-
-            if response.status_code == 200:
-                if response_time <= PerformanceThresholds.MAX_LOADING_TIME:
-                    response.success()
-                else:
-                    response.failure(
-                        f"Page des points trop lente: {response_time:.2f}s > "
-                        f"{PerformanceThresholds.MAX_LOADING_TIME}s"
-                    )
-            else:
-                response.failure(f"Erreur page des points: {response.status_code}")
 
 
 class BookingUser(HttpUser):

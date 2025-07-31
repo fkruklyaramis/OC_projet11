@@ -140,22 +140,19 @@ python -m pytest test/ --cov=server --cov-report=html
 
 #### 1. Démarrer le serveur Flask
 ```bash
-python server.py
+python -m flask run
 ```
 
 #### 2. Tests de performance automatisés
 ```bash
-# Test standard (30 secondes, 6 utilisateurs)
-locust -f test/perf/locustfile.py --host=http://localhost:5000 --users=6 --spawn-rate=1 --run-time=30s --html=rapport_performance.html --headless
+# Mode Web UI (par défaut - ouvre http://localhost:8089)
+locust -f test/perf/locustfile.py --host=http://localhost:5050
 
-# Test personnalisé
-locust -f test/perf/locustfile.py --host=http://localhost:5000 --users=10 --spawn-rate=2 --run-time=60s --html=rapport_performance.html --headless
-```
+# Mode CLI direct avec 6 utilisateurs, durée 60s
+locust -f test/perf/locustfile.py --host=http://localhost:5050 --users 6 --spawn-rate 2 --run-time 60s --headless
 
-#### 3. Interface web Locust (optionnel)
-```bash
-locust -f test/perf/locustfile.py --host=http://localhost:5000
-# Ouvrir http://localhost:8089 dans le navigateur
+# Avec rapport HTML
+locust -f test/perf/locustfile.py --host=http://localhost:5050 --users 6 --spawn-rate 2 --run-time 60s --headless --html rapport_locust.html
 ```
 
 ### Interprétation des Résultats

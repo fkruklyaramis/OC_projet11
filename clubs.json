@@ -3,32 +3,32 @@
         {
             "name": "Simply Lift",
             "email": "john@simplylift.co",
-            "points": "15"
+            "points": 0
         },
         {
             "name": "Iron Temple",
             "email": "admin@irontemple.com",
-            "points": "4"
+            "points": 4
         },
         {
             "name": "She Lifts",
             "email": "kate@shelifts.co.uk",
-            "points": "12"
+            "points": 12
         },
         {
             "name": "Powerhouse Gym",
             "email": "contact@powerhousegym.com",
-            "points": "8"
+            "points": 8
         },
         {
             "name": "Fit Nation",
             "email": "info@fitnation.com",
-            "points": "10"
+            "points": 10
         },
         {
             "name": "Strength Society",
             "email": "contact@strengthsociety.com",
-            "points": "6"
+            "points": 6
         }
     ]
 }
